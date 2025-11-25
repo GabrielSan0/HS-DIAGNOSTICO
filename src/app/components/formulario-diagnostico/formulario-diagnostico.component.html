@@ -1,0 +1,82 @@
+<div class="container">
+  <h1>Diagnóstico de Herramientas de Gestión Humana (MVP)</h1>
+  <p class="intro">
+    Evalúe el estado actual de cada herramienta de GH con respecto a su existencia, actualización y nivel de automatización.
+  </p>
+
+  <form [formGroup]="diagnosticoForm" (ngSubmit)="onSubmit()">
+    
+    <div formArrayName="macroprocesos" class="macroprocesos-list">
+      <div 
+        *ngFor="let macroprocesoControl of macroprocesosControls.controls; let i = index" 
+        [formGroupName]="i" 
+        class="macroproceso-card"
+      >
+        
+        <div class="macroproceso-header">
+          <h2>{{ i + 1 }}. {{ macroprocesoControl.get('nombre')?.value }}</h2>
+          <p class="objetivo">{{ macroprocesoControl.get('objetivo')?.value }}</p>
+        </div>
+
+        <table class="herramientas-table">
+          <thead>
+            <tr>
+              <th style="width: 5%;">#</th>
+              <th style="width: 35%;">Herramienta</th>
+              <th style="width: 10%;">Aporte</th>
+              <th style="width: 15%;">¿Existe?</th>
+              <th style="width: 15%;">¿Actualizado?</th>
+              <th style="width: 15%;">¿Automatizado?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container formArrayName="herramientas">
+              <tr 
+                *ngFor="let herramientaControl of getHerramientasControls(macroprocesoControl).controls; let j = index" 
+                [formGroupName]="j"
+              >
+                <td>{{ herramientaControl.get('id')?.value }}</td>
+                <td>{{ herramientaControl.get('nombre')?.value }}</td>
+                <td [ngClass]="getAporteClass(herramientaControl.get('aporte')?.value)">
+                  {{ herramientaControl.get('aporte')?.value }}
+                </td>
+
+                <td>
+                  <div class="radio-group">
+                    <label>Sí <input type="radio" [value]="true" formControlName="existe"></label>
+                    <label>No <input type="radio" [value]="false" formControlName="existe"></label>
+                  </div>
+                </td>
+                
+                <td>
+                  <div class="radio-group">
+                    <label>Sí <input type="radio" [value]="true" formControlName="actualizado"></label>
+                    <label>No <input type="radio" [value]="false" formControlName="actualizado"></label>
+                  </div>
+                </td>
+
+                <td>
+                  <div class="radio-group">
+                    <label>Sí <input type="radio" [value]="true" formControlName="automatizado"></label>
+                    <label>No <input type="radio" [value]="false" formControlName="automatizado"></label>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="form-actions">
+      <button type="submit" [disabled]="diagnosticoForm.invalid" class="btn-primary">
+        Guardar Diagnóstico
+      </button>
+      <button type="button" (click)="resetFormulario()" class="btn-secondary">
+        Reiniciar a Valores Iniciales
+      </button>
+      <p class="status-message">{{ mensajeEstado }}</p>
+    </div>
+
+  </form>
+</div>

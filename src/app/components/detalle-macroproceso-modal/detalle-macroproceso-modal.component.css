@@ -1,0 +1,129 @@
+/* src/app/components/detalle-macroproceso-modal/detalle-macroproceso-modal.component.css */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 90%;
+    width: 1200px; /* Ancho para gráficos */
+    max-height: 90%;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #004d99;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #343a40;
+}
+
+.objetivo {
+    font-style: italic;
+    color: #6c757d;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* --- Grilla y Contenedores de Gráficos --- */
+.chart-grid {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.chart-container {
+    flex: 1 1 30%; /* Para que cada uno ocupe ~30% del espacio */
+    min-width: 350px;
+    padding: 15px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.chart-container h3 {
+    text-align: center;
+    color: #343a40;
+    font-size: 1.2em;
+    margin-bottom: 15px;
+}
+
+.fase3-note {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 10px;
+    border-left: 5px solid #ffc107;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.modal-content {
+    /* ... (propiedades existentes) */
+    max-width: 90%;
+    width: 1200px; 
+    max-height: 90%;
+    overflow-y: auto;
+    position: relative;
+    
+    /* **AÑADIR ESTO:** Limita el alto del contenido para que Chart.js sepa redimensionar. */
+    height: auto; 
+}
+
+.chart-grid {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+    flex-wrap: wrap;
+    /* **AÑADIR ESTO:** Define una altura máxima para que los gráficos no crezcan indefinidamente. */
+    max-height: 500px; 
+}
+
+.chart-container {
+    flex: 1 1 30%; 
+    min-width: 350px;
+    padding: 15px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    
+    /* **AÑADIR ESTO:** Esto asegura que Chart.js respete el tamaño del contenedor.** */
+    height: 100%; 
+    display: flex; /* Para mejor alineación vertical */
+    flex-direction: column;
+}
+
+/* IMPORTANTE: Redefinir el canvas para que ocupe el espacio disponible */
+.chart-container canvas {
+    flex-grow: 1; /* Permite que el canvas llene el espacio disponible en el contenedor */
+    max-height: 300px; /* Limita la altura del gráfico, crucial para Doughnut y Bar */
+}

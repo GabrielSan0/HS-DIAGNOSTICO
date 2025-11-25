@@ -1,0 +1,159 @@
+/* Estilos Generales y Layout */
+.container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #004d99; /* Azul Corporativo */
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.intro {
+    text-align: center;
+    color: #6c757d;
+    margin-bottom: 30px;
+}
+
+/* Estilos de Macroproceso (Acordeón/Card) */
+.macroproceso-card {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.macroproceso-header h2 {
+    color: #343a40;
+    font-size: 1.5em;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 5px;
+    margin-top: 0;
+}
+
+.objetivo {
+    font-style: italic;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+/* Estilos de Tabla de Herramientas */
+.herramientas-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.herramientas-table th, 
+.herramientas-table td {
+    border: 1px solid #e9ecef;
+    padding: 10px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.herramientas-table th {
+    background-color: #e9ecef;
+    font-weight: bold;
+    color: #343a40;
+    text-align: center;
+}
+
+/* Estilos de Respuestas (Radio Buttons) */
+.radio-group {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.radio-group label {
+    cursor: pointer;
+    font-weight: normal;
+    font-size: 0.9em;
+}
+
+.radio-group input[type="radio"] {
+    margin-left: 5px;
+}
+
+/* Estilos de Aporte (Clasificación de la Herramienta) */
+.aporte-esencial {
+    font-weight: bold;
+    color: #dc3545; /* Rojo */
+    background-color: #f8d7da;
+    border-radius: 3px;
+    text-align: center;
+}
+
+.aporte-estrategica {
+    font-weight: bold;
+    color: #ffc107; /* Amarillo */
+    background-color: #fff3cd;
+    border-radius: 3px;
+    text-align: center;
+}
+
+.aporte-necesaria {
+    font-weight: bold;
+    color: #007bff; /* Azul */
+    background-color: #cce5ff;
+    border-radius: 3px;
+    text-align: center;
+}
+
+/* Estilos de Botones y Acciones */
+.form-actions {
+    margin-top: 30px;
+    text-align: center;
+    padding: 20px;
+    background-color: #e9ecef;
+    border-radius: 6px;
+}
+
+.btn-primary {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+.btn-primary:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.status-message {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #155724;
+}

@@ -3,6 +3,9 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 
+import { provideCharts } from 'ng2-charts'; // <-- SÓLO provideCharts
+
+
 export const appConfig: ApplicationConfig = {
-  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes)]
+  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes),provideCharts(),]
 };

@@ -1,0 +1,127 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common'; // Necesario para ngFor, ngIf, ngClass
+import { FormBuilder, FormGroup, FormArray, AbstractControl, ReactiveFormsModule } from '@angular/forms'; // <-- IMPORTAR REACTIVE FORMS AQUÍ
+import { DiagnosticoService } from '../../services/diagnostico.service';
+import { Macroproceso } from '../../Models/macroproceso.model';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-formulario-diagnostico',
+  standalone: true,
+  // IMPORTANTE: Listar todos los módulos y servicios necesarios
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule // Módulo para usar FormBuilder, FormGroup, FormArray
+  ],
+  templateUrl: './formulario-diagnostico.component.html',
+  styleUrl: './formulario-diagnostico.component.css',
+  // Si el servicio no está en 'root', se debe proveer aquí, pero asumiremos 'root'
+  // providers: [DiagnosticoService] 
+})
+export class FormularioDiagnosticoComponent implements OnInit {
+  
+  // Array de Macroprocesos cargado desde el servicio
+  public diagnosticoData: Macroproceso[] = [];
+  
+  // El formulario reactivo principal
+  public diagnosticoForm: FormGroup = this.fb.group({});
+  
+  // Mensaje de estado para el usuario
+  public mensajeEstado: string = '';
+
+  constructor(
+    // El servicio se inyecta normalmente
+    private fb: FormBuilder,
+    private diagnosticoService: DiagnosticoService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    // 1. Cargar los datos guardados o iniciales
+    this.diagnosticoData = this.diagnosticoService.getEncuesta();
+    
+    // 2. Construir el formulario reactivo
+    this.diagnosticoForm = this.fb.group({
+      // Un FormArray para manejar la lista de macroprocesos
+      macroprocesos: this.fb.array(
+        this.diagnosticoData.map(macroproceso => this.crearMacroprocesoFormGroup(macroproceso))
+      )
+    });
+  }
+
+  // --- MÉTODOS DE AYUDA (Mismos que en la versión de Módulos) ---
+
+  private crearMacroprocesoFormGroup(macroproceso: Macroproceso): FormGroup {
+    return this.fb.group({
+      id: [macroproceso.id],
+      nombre: [macroproceso.nombre],
+      objetivo: [macroproceso.objetivo],
+      herramientas: this.fb.array(
+        macroproceso.herramientas.map(herramienta => this.crearHerramientaFormGroup(herramienta))
+      )
+    });
+  }
+
+  private crearHerramientaFormGroup(herramienta: any): FormGroup {
+    // Nota: Los valores iniciales pueden ser 'null' si la encuesta no ha sido respondida
+    return this.fb.group({
+      id: [herramienta.id],
+      nombre: [herramienta.nombre],
+      aporte: [herramienta.aporte],
+      existe: [herramienta.existe], 
+      actualizado: [herramienta.actualizado],
+      automatizado: [herramienta.automatizado],
+    });
+  }
+
+  // --- GETTERS ---
+
+  get macroprocesosControls(): FormArray {
+    return this.diagnosticoForm.get('macroprocesos') as FormArray;
+  }
+  
+  getHerramientasControls(macroprocesoControl: AbstractControl): FormArray {
+    return macroprocesoControl.get('herramientas') as FormArray;
+  }
+
+  // --- LÓGICA DE GUARDADO ---
+
+  onSubmit(): void {
+    if (this.diagnosticoForm.invalid) {
+      this.mensajeEstado = '⚠️ Por favor, revisa el formulario. Asegúrate de haber respondido todas las preguntas.';
+      // Opcional: Marcar todos los controles como 'touched' para mostrar errores
+      this.diagnosticoForm.markAllAsTouched(); 
+      return;
+    }
+
+    const formValue: { macroprocesos: Macroproceso[] } = this.diagnosticoForm.value;
+    
+    // Guardar los datos actualizados en LocalStorage
+    this.diagnosticoService.saveEncuesta(formValue.macroprocesos);
+    
+    this.mensajeEstado = '✅ Diagnóstico guardado exitosamente en LocalStorage.';
+    console.log('Diagnóstico Guardado:', formValue.macroprocesos);
+    
+    // Opcional: Recargar los datos para confirmar
+    this.diagnosticoData = this.diagnosticoService.getEncuesta();
+    setTimeout(() => {
+            this.router.navigate(['/dashboard']); 
+        }, 1000);
+  }
+  
+  resetFormulario(): void {
+    const nuevaEncuesta = this.diagnosticoService.resetEncuesta();
+    this.diagnosticoData = nuevaEncuesta;
+    this.ngOnInit(); // Reinicializa el formulario con los valores por defecto (null)
+    this.mensajeEstado = '🔄 Formulario reiniciado a la configuración inicial.';
+  }
+
+  getAporteClass(aporte: string): string {
+    switch (aporte) {
+      case 'Esencial': return 'aporte-esencial';
+      case 'Estratégica': return 'aporte-estrategica';
+      case 'Necesaria': return 'aporte-necesaria';
+      default: return '';
+    }
+  }
+}

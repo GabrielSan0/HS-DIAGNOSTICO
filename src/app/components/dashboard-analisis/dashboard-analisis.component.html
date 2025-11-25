@@ -1,0 +1,74 @@
+<div class="dashboard-container">
+  <div class="stats-summary">
+    
+    <div class="stat-card" [ngClass]="getSemaforoClass(semaforoGlobalExistencia)">
+      <h3>Nivel Global de Existencia</h3>
+      <span class="value">{{ promedioGeneralExistencia }}%</span>
+      <p class="description">Semáforo: {{ semaforoGlobalExistencia }}</p>
+    </div>
+
+    <div class="stat-card" [ngClass]="getSemaforoClass(semaforoGlobalActualizacion)">
+      <h3>Nivel Global de Actualización</h3>
+      <span class="value">{{ promedioGeneralActualizacion }}%</span>
+      <p class="description">Semáforo: {{ semaforoGlobalActualizacion }}</p>
+    </div>
+
+    <div class="stat-card" [ngClass]="getSemaforoClass(semaforoGlobalAutomatizacion)">
+      <h3>Nivel Global de Automatización</h3>
+      <span class="value">{{ promedioGeneralAutomatizacion }}%</span>
+      <p class="description">Semáforo: {{ semaforoGlobalAutomatizacion }}</p>
+    </div>
+
+  </div>
+
+  <h2 class="section-title">Análisis Detallado por Macroproceso (Clic para ver Gráficos)</h2>
+
+  <div class="table-responsive">
+    <table class="macroproceso-table">
+      <thead>
+        <tr>
+          <th>Macroproceso</th>
+          <th>Total Herramientas</th>
+          <th>Riesgo General</th>
+          <th>% Existe (Semáforo)</th>
+          <th>% Actualizado (Semáforo)</th>
+          <th>% Automatizado (Semáforo)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr 
+          *ngFor="let res of resultados" 
+          [class.highlight-row]="res.nivelRiesgo === 'Alto'"
+          (click)="openModal(res)" class="clickable-row"
+        >
+          <td>{{ res.nombre }}</td>
+          <td>{{ res.totalHerramientas }}</td>
+          <td [ngClass]="getRiesgoClass(res.nivelRiesgo)">
+            {{ res.nivelRiesgo }}
+          </td>
+          
+          <td>
+            <span class="semaforo-indicator" [ngClass]="getSemaforoClass(res.semaforoExistente)"></span>
+            {{ res.pctExistente }}%
+          </td>
+          
+          <td>
+            <span class="semaforo-indicator" [ngClass]="getSemaforoClass(res.semaforoActualizado)"></span>
+            {{ res.pctActualizado }}%
+          </td>
+
+          <td>
+            <span class="semaforo-indicator" [ngClass]="getSemaforoClass(res.semaforoAutomatizado)"></span>
+            <strong [ngClass]="{'text-danger': res.semaforoAutomatizado === 'Rojo'}">{{ res.pctAutomatizado }}%</strong>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-detalle-macroproceso-modal 
+  *ngIf="isModalOpen"
+  [macroproceso]="selectedMacroproceso"
+  (close)="closeModal()"
+/>
