@@ -4,14 +4,17 @@ import { FormBuilder, FormGroup, FormArray, AbstractControl, ReactiveFormsModule
 import { DiagnosticoService } from '../../services/diagnostico.service';
 import { Macroproceso } from '../../Models/macroproceso.model';
 import { Router } from '@angular/router';
+import { ChatComponent } from '../chat/chat.component';
+import { ChatService, FormActionData } from '../../services/chat.service';
 
 @Component({
   selector: 'app-formulario-diagnostico',
   standalone: true,
   // IMPORTANTE: Listar todos los módulos y servicios necesarios
   imports: [
-    CommonModule, 
-    ReactiveFormsModule // Módulo para usar FormBuilder, FormGroup, FormArray
+    CommonModule,
+    ReactiveFormsModule, // Módulo para usar FormBuilder, FormGroup, FormArray
+    ChatComponent // <-- Importar el componente de Chat
   ],
   templateUrl: './formulario-diagnostico.component.html',
   styleUrl: './formulario-diagnostico.component.css',
@@ -19,13 +22,13 @@ import { Router } from '@angular/router';
   // providers: [DiagnosticoService] 
 })
 export class FormularioDiagnosticoComponent implements OnInit {
-  
+
   // Array de Macroprocesos cargado desde el servicio
   public diagnosticoData: Macroproceso[] = [];
-  
+
   // El formulario reactivo principal
   public diagnosticoForm: FormGroup = this.fb.group({});
-  
+
   // Mensaje de estado para el usuario
   public mensajeEstado: string = '';
 
@@ -33,19 +36,25 @@ export class FormularioDiagnosticoComponent implements OnInit {
     // El servicio se inyecta normalmente
     private fb: FormBuilder,
     private diagnosticoService: DiagnosticoService,
-    private router: Router
+    private router: Router,
+    private chatService: ChatService
   ) { }
 
   ngOnInit(): void {
     // 1. Cargar los datos guardados o iniciales
     this.diagnosticoData = this.diagnosticoService.getEncuesta();
-    
+
     // 2. Construir el formulario reactivo
     this.diagnosticoForm = this.fb.group({
       // Un FormArray para manejar la lista de macroprocesos
       macroprocesos: this.fb.array(
         this.diagnosticoData.map(macroproceso => this.crearMacroprocesoFormGroup(macroproceso))
       )
+    });
+
+    // 3. Suscribirse a acciones del Chat
+    this.chatService.formAction$.subscribe(acciones => {
+      this.procesarAccionesChat(acciones);
     });
   }
 
@@ -68,9 +77,49 @@ export class FormularioDiagnosticoComponent implements OnInit {
       id: [herramienta.id],
       nombre: [herramienta.nombre],
       aporte: [herramienta.aporte],
-      existe: [herramienta.existe], 
+      existe: [herramienta.existe],
       actualizado: [herramienta.actualizado],
       automatizado: [herramienta.automatizado],
+    });
+  }
+
+  // --- LOGICA DE INTEGRACION CHAT ---
+  private procesarAccionesChat(acciones: FormActionData[]) {
+    // Recorremos las acciones que nos manda el servicio
+    acciones.forEach(accion => {
+      // 1. Encontrar el índice del macroproceso
+      const macroprocesoIndex = this.diagnosticoData.findIndex(m =>
+        m.nombre.toLowerCase().includes(accion.macroproceso.toLowerCase()) ||
+        accion.macroproceso.toLowerCase().includes(m.nombre.toLowerCase())
+      );
+
+      if (macroprocesoIndex !== -1) {
+        // Obtenemos el FormArray de herramientas de ese macroproceso
+        const macroFormGroup = this.macroprocesosControls.at(macroprocesoIndex) as FormGroup;
+        const herramientasArray = macroFormGroup.get('herramientas') as FormArray;
+
+        // 2. Encontrar el índice de la herramienta dentro del macroproceso
+        // Necesitamos recorrer los controles para ver el valor 'nombre'
+        let herramientaIndex = -1;
+        for (let i = 0; i < herramientasArray.length; i++) {
+          const hControl = herramientasArray.at(i);
+          const hNombre = hControl.get('nombre')?.value;
+          if (hNombre && hNombre.toLowerCase().includes(accion.herramienta.toLowerCase())) {
+            herramientaIndex = i;
+            break;
+          }
+        }
+
+        // 3. Si encontramos la herramienta, hacer patchValue
+        if (herramientaIndex !== -1) {
+          const targetControl = herramientasArray.at(herramientaIndex);
+          targetControl.patchValue(accion.valores);
+          this.mensajeEstado = `🤖 Actualizado: ${accion.macroproceso} - ${accion.herramienta}`;
+
+          // Efecto visual temporal (opcional)
+          // setTimeout(() => this.mensajeEstado = '', 3000);
+        }
+      }
     });
   }
 
@@ -79,7 +128,7 @@ export class FormularioDiagnosticoComponent implements OnInit {
   get macroprocesosControls(): FormArray {
     return this.diagnosticoForm.get('macroprocesos') as FormArray;
   }
-  
+
   getHerramientasControls(macroprocesoControl: AbstractControl): FormArray {
     return macroprocesoControl.get('herramientas') as FormArray;
   }
@@ -90,25 +139,25 @@ export class FormularioDiagnosticoComponent implements OnInit {
     if (this.diagnosticoForm.invalid) {
       this.mensajeEstado = '⚠️ Por favor, revisa el formulario. Asegúrate de haber respondido todas las preguntas.';
       // Opcional: Marcar todos los controles como 'touched' para mostrar errores
-      this.diagnosticoForm.markAllAsTouched(); 
+      this.diagnosticoForm.markAllAsTouched();
       return;
     }
 
     const formValue: { macroprocesos: Macroproceso[] } = this.diagnosticoForm.value;
-    
+
     // Guardar los datos actualizados en LocalStorage
     this.diagnosticoService.saveEncuesta(formValue.macroprocesos);
-    
+
     this.mensajeEstado = '✅ Diagnóstico guardado exitosamente en LocalStorage.';
     console.log('Diagnóstico Guardado:', formValue.macroprocesos);
-    
+
     // Opcional: Recargar los datos para confirmar
     this.diagnosticoData = this.diagnosticoService.getEncuesta();
     setTimeout(() => {
-            this.router.navigate(['/dashboard']); 
-        }, 1000);
+      this.router.navigate(['/dashboard']);
+    }, 1000);
   }
-  
+
   resetFormulario(): void {
     const nuevaEncuesta = this.diagnosticoService.resetEncuesta();
     this.diagnosticoData = nuevaEncuesta;
