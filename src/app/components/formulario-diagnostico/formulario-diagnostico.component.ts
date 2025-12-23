@@ -84,44 +84,64 @@ export class FormularioDiagnosticoComponent implements OnInit {
   }
 
   // --- LOGICA DE INTEGRACION CHAT ---
-  private procesarAccionesChat(acciones: FormActionData[]) {
-    // Recorremos las acciones que nos manda el servicio
-    acciones.forEach(accion => {
-      // 1. Encontrar el índice del macroproceso
-      const macroprocesoIndex = this.diagnosticoData.findIndex(m =>
-        m.nombre.toLowerCase().includes(accion.macroproceso.toLowerCase()) ||
-        accion.macroproceso.toLowerCase().includes(m.nombre.toLowerCase())
-      );
-
-      if (macroprocesoIndex !== -1) {
-        // Obtenemos el FormArray de herramientas de ese macroproceso
-        const macroFormGroup = this.macroprocesosControls.at(macroprocesoIndex) as FormGroup;
-        const herramientasArray = macroFormGroup.get('herramientas') as FormArray;
-
-        // 2. Encontrar el índice de la herramienta dentro del macroproceso
-        // Necesitamos recorrer los controles para ver el valor 'nombre'
-        let herramientaIndex = -1;
-        for (let i = 0; i < herramientasArray.length; i++) {
-          const hControl = herramientasArray.at(i);
-          const hNombre = hControl.get('nombre')?.value;
-          if (hNombre && hNombre.toLowerCase().includes(accion.herramienta.toLowerCase())) {
-            herramientaIndex = i;
-            break;
-          }
-        }
-
-        // 3. Si encontramos la herramienta, hacer patchValue
-        if (herramientaIndex !== -1) {
-          const targetControl = herramientasArray.at(herramientaIndex);
-          targetControl.patchValue(accion.valores);
-          this.mensajeEstado = `🤖 Actualizado: ${accion.macroproceso} - ${accion.herramienta}`;
-
-          // Efecto visual temporal (opcional)
-          // setTimeout(() => this.mensajeEstado = '', 3000);
+// En formulario-diagnostico.component.ts
+private procesarAccionesChat(acciones: FormActionData[]) {
+  console.log('🔄 Procesando acciones del chat:', acciones);
+  
+  let actualizacionesRealizadas = 0;
+  const herramientasActualizadas: string[] = [];
+  
+  acciones.forEach(accion => {
+    // Buscar la herramienta por ID en todos los macroprocesos
+    for (let i = 0; i < this.macroprocesosControls.length; i++) {
+      const macroFormGroup = this.macroprocesosControls.at(i) as FormGroup;
+      const herramientasArray = macroFormGroup.get('herramientas') as FormArray;
+      
+      for (let j = 0; j < herramientasArray.length; j++) {
+        const herramientaControl = herramientasArray.at(j) as FormGroup;
+        const herramientaId = herramientaControl.get('id')?.value;
+        
+        if (herramientaId === accion.herramientaId) {
+          // Obtener el nombre de la herramienta para el mensaje
+          const nombreHerramienta = herramientaControl.get('nombre')?.value;
+          
+          // Actualizar solo los campos que vienen en la acción
+          const valoresActuales = herramientaControl.value;
+          const nuevosValores = {
+            ...valoresActuales,
+            ...accion.valores  // Merge: sobrescribe solo los campos proporcionados
+          };
+          
+          herramientaControl.patchValue(nuevosValores);
+          actualizacionesRealizadas++;
+          herramientasActualizadas.push(`${herramientaId}. ${nombreHerramienta}`);
+          
+          console.log(`✅ Herramienta ID ${herramientaId} actualizada:`, nuevosValores);
+          break;
         }
       }
-    });
+    }
+  });
+  
+  if (actualizacionesRealizadas > 0) {
+    // Crear mensaje descriptivo
+    if (herramientasActualizadas.length <= 3) {
+      this.mensajeEstado = `🤖 Actualizadas: ${herramientasActualizadas.join(', ')}`;
+    } else {
+      this.mensajeEstado = `🤖 Actualizadas ${actualizacionesRealizadas} herramientas`;
+    }
+    
+    // Limpiar mensaje después de 3 segundos
+    setTimeout(() => {
+      this.mensajeEstado = '';
+    }, 3000);
+    
+    // Forzar detección de cambios
+    this.diagnosticoForm.updateValueAndValidity();
+  } else {
+    console.warn('⚠️ No se encontraron herramientas para actualizar');
   }
+}
 
   // --- GETTERS ---
 
