@@ -31,7 +31,7 @@ export interface ChatbotResponse {
 })
 export class ChatService {
 
-  private readonly API_URL = 'http://localhost:5678/webhook-test/DiagnosticoGH';
+  private readonly API_URL = 'https://jenna-connectible-prettily.ngrok-free.dev/webhook/DiagnosticoGH';
 
   // Fuente de mensajes para el componente de chat
   private messagesSubject = new BehaviorSubject<ChatMessage[]>([
